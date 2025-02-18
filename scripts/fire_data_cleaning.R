@@ -4,6 +4,7 @@ library(janitor)
 library(readxl)
 library(lubridate)
 library(dplyr)
+library(patchwork)
 
 
 # fire_data <- read_xlsx(here("data", "ca_fire_perim.xlsx")) %>% 
@@ -24,7 +25,7 @@ library(dplyr)
   
 fire_data <- read_csv(here("data", "new_fire_data_filter.csv"))
 
-fire_freq_county <- fire_data %>% 
+fire_freq_county_year <- fire_data %>% 
   filter(county != "REMOVE") %>% 
   group_by(county, year) %>% 
   summarize(frequency=n()) %>% 
@@ -32,22 +33,50 @@ fire_freq_county <- fire_data %>%
   group_by(county, year) %>%
   summarise(frequency = sum(frequency), .groups = "drop")
 
-fire_freq_plot <- ggplot(fire_freq_county, aes(x = year, y=frequency)) +
+fire_freq_county_year_plot <- ggplot(fire_freq_county_year, aes(x = year, y=frequency)) +
   geom_col() +
   facet_wrap(~ county, scales = 'free_x')
 
-fire_freq_plot  
+fire_freq_county_year_plot  
+
+fire_freq_county <- fire_data %>% 
+  filter(county != "REMOVE") %>% 
+  group_by(county) %>% 
+  summarize(frequency=n()) %>% 
+  separate_rows(county, sep = ", ") %>%  # Separate multiple counties into individual rows
+  group_by(county) %>%
+  summarise(frequency = sum(frequency), .groups = "drop")
+
+fire_freq_county_plot <- ggplot(fire_freq_county, aes(x = reorder(county, frequency), y=frequency)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = "County", y = "Fire Frequency", title = "Fire Frequency by County") +
+  theme_minimal()
+
+fire_freq_county_plot  
+
+fire_acres_county_year <- fire_data %>% 
+  filter(county != "REMOVE") %>% 
+  separate_rows(county, sep = ", ") %>% 
+  group_by(county, year) %>% 
+  summarise(total_acres = sum(acres), .groups = "drop")
+
+fire_acres_county_year_plot <- ggplot(fire_acres_county_year, aes(x = year, y=total_acres)) +
+  geom_col() +
+  facet_wrap(~ county, scales = 'free_x')
+
+fire_acres_county_year_plot  
 
 fire_acres_county <- fire_data %>% 
   filter(county != "REMOVE") %>% 
-  separate_rows(county, sep = ", ") %>%
-  group_by(county, year) %>% 
-  summarize(sum=acres)
+  separate_rows(county, sep = ", ") %>% 
+  group_by(county) %>% 
+  summarise(total_acres = sum(acres), .groups = "drop")
 
-  
-  
-  
-  
-  
-  
-  
+fire_acres_county_plot <- ggplot(fire_acres_county, aes(x = reorder(county, total_acres), y=total_acres)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = "County", y = "Total Acres Burned", title = "Total Acres Burned by County") +
+  theme_minimal()
+
+fire_acres_county_plot + fire_freq_county_plot  
