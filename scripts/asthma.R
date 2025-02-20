@@ -33,14 +33,14 @@ showtext_auto()
 # - Age-adjusted hospitalization rate: Hospitalizations per 10,000 people, adjusting for population size and age distribution.
 
 # Load asthma data
-asthma <- read_csv(here("data", "asthma_2022.csv")) %>% 
+asthma <- read_csv(here("data", "asthma_2013.csv")) %>% 
   clean_names()
 
 # Clean and format asthma data
 asthma_clean <- asthma %>% 
-  select(-comment) %>%  # Remove unnecessary column
-  relocate(year, county, number_of_hospitalizations, age_group, age_adjusted_hospitalization_rate, strata, strata_name) %>%  # Reorder columns
-  filter(county != "California")  # Remove state-wide summary row
+  select(year, zip_code, county, number_of_asthma_ed_visits)
+  # relocate(year, county, number_of_hospitalizations, age_group, age_adjusted_hospitalization_rate, strata, strata_name) %>%  # Reorder columns
+  # filter(county != "California")  # Remove state-wide summary row
 
 # --------------------------------------------------------------------------------
 # Hospitalization Trends Over Time
@@ -49,9 +49,13 @@ asthma_clean <- asthma %>%
 # Summarize total hospitalizations by year
 asthma_yearly_summary <- asthma_clean %>% 
   group_by(year) %>% 
-  summarise(total_hospitalizations = sum(number_of_hospitalizations, na.rm = TRUE)) %>% 
+  summarise(total_hospitalizations = sum(number_of_asthma_ed_visits, na.rm = TRUE)) %>% 
   ungroup()
 
+# visualize the skew of the data with a histogram: 
+ggplot(asthma_yearly_summary, aes(x = total_hospitalizations)) +
+  geom_histogram(fill = "#F4BEB6", color = "black", bins = 10) +
+  theme_minimal()
 
 # Plot: Total asthma hospitalizations over time
 yearly_plot <- ggplot(asthma_yearly_summary, aes(x = year, y = total_hospitalizations)) +
@@ -125,7 +129,7 @@ ggsave(here("images", "asthma_hospitalization_trends_viz.png"), yearly_plot_prez
 # Summarize total hospitalizations by county
 asthma_county_summary <- asthma_clean %>% 
   group_by(county) %>% 
-  summarise(total_hospitalizations = sum(number_of_hospitalizations, na.rm = TRUE)) %>% 
+  summarise(total_hospitalizations = sum(number_of_asthma_ed_visits, na.rm = TRUE)) %>% 
   arrange(desc(total_hospitalizations)) %>% 
   ungroup()
 
@@ -204,7 +208,7 @@ ggsave(here("images", "asthma_hospitalization_rates_by_county.png"), lollipop, w
 # Summarize hospitalizations by year and county
 asthma_year_county_summary <- asthma_clean %>%
   group_by(year, county) %>%
-  summarize(total_hospitalizations = sum(number_of_hospitalizations, na.rm = TRUE), .groups = "drop")
+  summarize(total_hospitalizations = sum(number_of_asthma_ed_visits, na.rm = TRUE), .groups = "drop")
 
 # Merge asthma data with population data and calculate hospitalization rate per 1,000 people
 asthma_year_county_enviroscreen <- asthma_year_county_summary %>% 
@@ -326,26 +330,42 @@ year_county_plot_prez
 # Save the plot as a PNG image with larger dimensions for presentation use
 ggsave(here("images", "asthma_hospitalization_line_prez.png"), year_county_plot_prez, width = 10, height = 6, units = "in")
 
-year_county_plot_area <- ggplot(asthma_year_county_enviroscreen, aes(x = year, y = hospitalization_rate_per_1000, fill = county)) +
-  geom_area(alpha = 0.8) +  # Slightly less transparent for better contrast
+# --------------------------------------------------------------------------------
+# Stacked Areas Plot
+year_county_plot_area <- ggplot(asthma_year_county_enviroscreen, 
+                                aes(x = year, y = hospitalization_rate_per_1000, fill = county)) +
+  geom_area(alpha = 0.8) +
+  
   labs(
     title = "Trends in Asthma Hospitalization Rates by County (2015-2022)",
     subtitle = "Rates per 1,000 people for selected counties, adjusted for population size"
   ) + 
+  
   scale_fill_manual(values = county_colors) +
+  
   theme_minimal() +
   theme(
-    plot.title = element_text(family = "mont", face = "bold", size = 22, color = "black"),  # Larger title for better visibility
-    plot.subtitle = element_text(family = "open_sans", size = 18, color = "black"),  # Larger subtitle
-    axis.text = element_text(size = 16, color = "black", family = "open_sans"),  # Larger axis text
+    plot.title = element_text(family = "mont", 
+                              face = "bold", 
+                              size = 22, 
+                              color = "black"),
+    plot.subtitle = element_text(family = "open_sans", 
+                                 size = 18, 
+                                 color = "black"), 
+    axis.text = element_text(size = 16, 
+                             color = "black", 
+                             family = "open_sans"), 
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
-    legend.position = "bottom",  # Keep legend at the bottom for clarity
-    legend.text = element_text(size = 14),  # Larger legend text
-    legend.title = element_text(size = 16),  # Larger legend title
-    panel.grid.major = element_line(color = "#D3D3D3", size = 0.5),  # Light grid lines for readability
+    
+    legend.position = "bottom", 
+    legend.text = element_text(size = 14), 
+    legend.title = element_text(size = 16), 
+    
+    panel.grid.major = element_line(color = "#D3D3D3", size = 0.5), 
     panel.grid.minor = element_blank(),
-    plot.margin = margin(20, 20, 20, 20)  # Add margins for breathing room around the plot
+    
+    plot.margin = margin(20, 20, 20, 20)  
   )
 
 # Display the stacked area plot

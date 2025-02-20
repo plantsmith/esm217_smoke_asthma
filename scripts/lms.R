@@ -39,3 +39,19 @@ ggplot(asthma_fire_join, aes(x = frequency, y = hospitalization_rate_per_1000)) 
   theme_minimal()
 
 
+# --------------------------Linear Regression using PM 2.5 data  ------------------------------
+
+lm_pm <- lm(hospitalization_rate_per_1000 ~ median_annual_smoke_pm + 
+              year + 
+              month + 
+              county + 
+              total_acres_burned + 
+              total_fires + 
+              days_burned, 
+            data = fire_smoke_asthma_join)
+
+
+summary(lm_pm)
+
+coef(summary(lm_pm))[c("total_acres_burned", "total_fires", "days_burned"), ]
+
