@@ -31,8 +31,6 @@ fire_data <- read_csv(here("data", "fire_data_filter.csv")) %>%
 fire_data_mod <- fire_data %>% 
   group_by(county, year) %>%
   summarise(
-    avg_acres_burned = mean(acres, na.rm = TRUE),
-    avg_fires_per_year = n() / n_distinct(year),
     total_acres_burned = sum(acres, na.rm = TRUE),
     total_fires = n()
   ) %>%
@@ -42,7 +40,7 @@ fire_data_clean <- fire_data %>%
   left_join(fire_data_mod, by = c("county", "year"))
 
 
-
+write_csv(fire_data_clean, here("data", "fire_data_clean.csv"))
 
 
 
