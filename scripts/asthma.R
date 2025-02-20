@@ -1,7 +1,28 @@
 
-library(tidyverse)
+
+#libraries: 
+library(tidyverse)   # dplyr, purrr, etc.
+library(janitor)     # for clean_names()
+library(lubridate)   # for mdy(), etc
+library(here)        # for here()
+library(doBy)        # for summaryBy()
+library(scales)
+library(showtext) # allows us to import google fonts 
+library(glue)
+library(ggtext)
+library(sf)
 library(here)
-library(janitor)
+library(scales)
+
+#......................import Google fonts.......................
+# `name` is the name of the font as it appears in Google Fonts
+# `family` is the user-specified id that you'll use to apply a font in your ggpplot
+font_add_google(name = "Montserrat", family = "mont")
+font_add_google(name = "Open Sans", family = "open_sans")
+
+showtext_auto()
+
+
 
 # --------------------------------------------------------------------------------
 # Load and Clean Data
@@ -58,7 +79,45 @@ yearly_plot
 
 ggsave(here("images", "asthma_hospitalization_trends.png"), yearly_plot, width = 10, height = 6, units = "in")
 
+# --------------------------------------------------------------------------------
+# for presentation 
 
+yearly_plot_prez <- ggplot(asthma_yearly_summary, aes(x = year, y = total_hospitalizations)) +
+  geom_line(size = 1.5, color = "black") +  # Thicker solid line for visibility
+  geom_point(size = 4, color = "black") +  # Larger, high-contrast points
+  geom_smooth(method = "loess", color = "orange", size = 1.2, linetype = "dashed") +  # Bold dashed trend line
+  labs(
+    title = "Total Asthma Hospitalizations in California by Year",
+    y = "Total Hospitalizations"
+  ) +
+  scale_y_continuous(labels = comma) +  # Show full numbers with commas
+  theme_minimal() +  # Larger base font size for PowerPoint
+  theme(
+      plot.title.position = "plot", # shift title to the left
+      plot.title = element_text(family = "mont",
+                                face = "bold",
+                                size = 18,
+                                color = "black"),  # Fixed here by closing the parenthesis
+      plot.subtitle = ggtext::element_textbox(family = "open_sans",
+                                              size = 11.5,
+                                              color = "black",
+                                              margin = margin(t = 2, r = 0, b = 6, l = 0)),  # move in clockwise to top, right, bottom, left
+      plot.caption = ggtext::element_textbox(family = "open_sans",
+                                             face = "italic",
+                                             color = "black",
+                                             margin = margin(t = 15, r = 0, b = 0, l = 0)),
+    legend.position = "none",
+    axis.title = element_text(size = 20),  # Larger axis labels
+    axis.text = element_text(size = 18),  # Larger axis numbers
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_line(color = "#D3D3D3"),  # Light grid lines for readability
+    panel.grid.minor = element_blank()  # Remove minor grid lines
+  )
+
+yearly_plot_prez
+
+ggsave(here("images", "asthma_hospitalization_trends_viz.png"), yearly_plot_prez, width = 10, height = 6, units = "in")
 # --------------------------------------------------------------------------------
 # Hospitalizations by County
 # --------------------------------------------------------------------------------
@@ -199,3 +258,97 @@ year_county_plot
 
 ggsave(here("images", "asthma_hospitalization_line.png"), year_county_plot, width = 10, height = 6, units = "in")
 
+# --------------------------------------------------------------------------------
+# for presentation 
+
+
+# Define custom colors for each highlighted county
+# Create a fire-inspired color palette
+county_colors<- c("Fresno" = "#E69F00", 
+                  "Imperial" = "#56B4E9", 
+                  "Los Angeles" = "#009E73", 
+                  "Sacramento" = "#F0E442", 
+                  "San Bernardino" = "#D55E00", 
+                  "Other" = "grey")
+
+# Plot: Hospitalization rate per 1,000 people by year and county
+
+# Plot: Hospitalization rate per 1,000 people by year and county
+year_county_plot_prez <- ggplot(asthma_year_county_enviroscreen, aes(x = year, y = hospitalization_rate_per_1000, group = county, color = highlight)) +
+  
+  # Line plot for hospitalization trends
+  geom_line(size = 1.5) +  # Thicker line for better visibility
+  # Add points to highlight data points
+  geom_point(size = 4) +  # Larger points for emphasis
+  
+  # Add title, subtitle, and legend label
+  labs(
+    title = "Trends in Asthma Hospitalization Rates by County (2015-2022)",
+    subtitle = "Rates per 1,000 people for selected counties, adjusted for population size",
+    color = "County"
+  ) + 
+  
+  # Apply custom colors to each county
+  scale_color_manual(values = county_colors) +  
+  
+  # Clean theme for better readability
+  theme_minimal() +  
+  
+  # Customize font size and position for PowerPoint clarity
+    theme(
+      plot.title.position = "plot", # shift title to the left
+      plot.title = element_text(family = "mont",
+                                face = "bold",
+                                size = 18,
+                                color = "black"),  # Fixed here by closing the parenthesis
+      plot.subtitle = ggtext::element_textbox(family = "open_sans",
+                                              size = 11.5,
+                                              color = "black",
+                                              margin = margin(t = 2, r = 0, b = 6, l = 0)),  # move in clockwise to top, right, bottom, left
+      plot.caption = ggtext::element_textbox(family = "open_sans",
+                                             face = "italic",
+                                             color = "black",
+                                             margin = margin(t = 15, r = 0, b = 0, l = 0)),
+    axis.text = element_text(size = 14, color = "black", family = "open_sans"),  # Larger axis text size for better visibility
+    axis.title.x = element_blank(),  # Remove x-axis label
+    axis.title.y = element_blank(),  # Remove y-axis label
+    legend.position = "bottom",  # Legend at the bottom
+    legend.text = element_text(size = 14),  # Larger text for legend
+    legend.title = element_text(size = 16),  # Larger title for the legend
+    panel.grid.major = element_line(color = "#D3D3D3"),  # Light grid lines for readability
+    panel.grid.minor = element_blank()  # Remove minor grid lines
+)
+
+# Display the plot
+year_county_plot_prez
+
+
+# Save the plot as a PNG image with larger dimensions for presentation use
+ggsave(here("images", "asthma_hospitalization_line_prez.png"), year_county_plot_prez, width = 10, height = 6, units = "in")
+
+year_county_plot_area <- ggplot(asthma_year_county_enviroscreen, aes(x = year, y = hospitalization_rate_per_1000, fill = county)) +
+  geom_area(alpha = 0.8) +  # Slightly less transparent for better contrast
+  labs(
+    title = "Trends in Asthma Hospitalization Rates by County (2015-2022)",
+    subtitle = "Rates per 1,000 people for selected counties, adjusted for population size"
+  ) + 
+  scale_fill_manual(values = county_colors) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(family = "mont", face = "bold", size = 22, color = "black"),  # Larger title for better visibility
+    plot.subtitle = element_text(family = "open_sans", size = 18, color = "black"),  # Larger subtitle
+    axis.text = element_text(size = 16, color = "black", family = "open_sans"),  # Larger axis text
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = "bottom",  # Keep legend at the bottom for clarity
+    legend.text = element_text(size = 14),  # Larger legend text
+    legend.title = element_text(size = 16),  # Larger legend title
+    panel.grid.major = element_line(color = "#D3D3D3", size = 0.5),  # Light grid lines for readability
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(20, 20, 20, 20)  # Add margins for breathing room around the plot
+  )
+
+# Display the stacked area plot
+year_county_plot_area
+
+ggsave(here("images", "year_county_plot_area.png"), year_county_plot_area, width = 12, height = 8, units = "in")

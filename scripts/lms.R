@@ -28,3 +28,14 @@ summary(lm_freq)
 lm_county <- lm(hospitalization_rate_per_1000 ~ frequency + county, data = asthma_fire_join)
 
 summary(lm_county)
+
+#plotting the relationship between hospitalization rate and fire frequency
+ggplot(asthma_fire_join, aes(x = frequency, y = hospitalization_rate_per_1000)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Relationship between hospitalization rate and fire frequency",
+       x = "Fire frequency",
+       y = "Hospitalization rate per 1000 people") +
+  theme_minimal()
+
+
