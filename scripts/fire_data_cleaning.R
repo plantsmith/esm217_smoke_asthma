@@ -23,7 +23,7 @@ library(patchwork)
 # 
 # write.csv(fire_data_filter, here("data", "fire_data_filter.csv"))  
   
-fire_data <- read_csv(here("data", "new_fire_data_filter.csv"))
+fire_data <- read_csv(here("data", "fire_data_filter.csv"))
 
 fire_freq_county_year <- fire_data %>% 
   filter(county != "REMOVE") %>% 
