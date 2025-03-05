@@ -99,3 +99,26 @@ fire_freq_plot <- ggplot(fire_freq_county_year, aes(x = year, y=frequency)) +
   theme_minimal()
 
 fire_freq_plot
+
+
+
+
+fire_data_2020 <- read_csv(here("data", "fire_data_filter.csv")) %>% 
+  clean_names() %>% select(year, county, acres, name) %>% 
+  filter(year == 2020) %>% 
+  rename(acres_burn = acres) %>%   
+  drop_na(county) 
+
+fire_data_mod_2020 <- fire_data_2020 %>% 
+  group_by(county, year) %>%
+  summarise(
+    avg_acres_burned = mean(acres_burn, na.rm = TRUE),
+    avg_fires_per_year = n() / n_distinct(year),
+    total_acres_burned = sum(acres_burn, na.rm = TRUE),
+    total_fires = n()
+  ) %>%
+  ungroup()
+
+write_csv(fire_data_mod_2020, here("data", "fire_data_mod_2020.csv"))
+
+
