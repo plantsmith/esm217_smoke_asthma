@@ -94,3 +94,27 @@ autoplot(pca_ej_log,
 ) +
   scale_color_viridis_d(option="rocket") +
   theme_minimal()
+
+# scree plot: 
+
+# Calculate variance
+sd_vec <- pca_ej_log$sdev
+var_vec <- sd_vec^2 ### variance is square of standard deviation!
+pc_names <- colnames(pca_ej_log$rotation) # column names to loadings 
+
+# Create dataframe w PC, variance, and % var
+pct_expl_df <- data.frame(pc = pc_names,
+                          v = var_vec,
+                          pct_v = var_vec / sum(var_vec)) %>%
+  mutate(pct_lbl = paste0(round(pct_v*100, 1), '%'))
+
+# Reorder levels of pc factor
+pct_expl_df$pc <- factor(pct_expl_df$pc, levels = pc_names)
+
+# Column plot
+ggplot(pct_expl_df, aes(x = pc, y = v)) +
+  geom_col(fill= "black") +
+  geom_text(aes(label = pct_lbl), vjust = -0.5, nudge_y = 0.002) + 
+  labs(x = 'Principal Component', y = 'Variance Explained') +
+  theme_minimal()
+

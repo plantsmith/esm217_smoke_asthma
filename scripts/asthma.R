@@ -50,7 +50,8 @@ asthma_clean <- asthma %>%
 asthma_yearly_summary <- asthma_clean %>% 
   group_by(year) %>% 
   summarise(total_hospitalizations = sum(number_of_asthma_ed_visits, na.rm = TRUE)) %>% 
-  ungroup()
+  ungroup() %>% 
+  filter(year >= 2013 & year <= 2020)
 
 # visualize the skew of the data with a histogram: 
 ggplot(asthma_yearly_summary, aes(x = total_hospitalizations)) +
@@ -83,45 +84,7 @@ yearly_plot
 
 ggsave(here("images", "asthma_hospitalization_trends.png"), yearly_plot, width = 10, height = 6, units = "in")
 
-# --------------------------------------------------------------------------------
-# for presentation 
 
-yearly_plot_prez <- ggplot(asthma_yearly_summary, aes(x = year, y = total_hospitalizations)) +
-  geom_line(size = 1.5, color = "black") +  # Thicker solid line for visibility
-  geom_point(size = 4, color = "black") +  # Larger, high-contrast points
-  geom_smooth(method = "loess", color = "orange", size = 1.2, linetype = "dashed") +  # Bold dashed trend line
-  labs(
-    title = "Total Asthma Hospitalizations in California by Year",
-    y = "Total Hospitalizations"
-  ) +
-  scale_y_continuous(labels = comma) +  # Show full numbers with commas
-  theme_minimal() +  # Larger base font size for PowerPoint
-  theme(
-      plot.title.position = "plot", # shift title to the left
-      plot.title = element_text(family = "mont",
-                                face = "bold",
-                                size = 18,
-                                color = "black"),  # Fixed here by closing the parenthesis
-      plot.subtitle = ggtext::element_textbox(family = "open_sans",
-                                              size = 11.5,
-                                              color = "black",
-                                              margin = margin(t = 2, r = 0, b = 6, l = 0)),  # move in clockwise to top, right, bottom, left
-      plot.caption = ggtext::element_textbox(family = "open_sans",
-                                             face = "italic",
-                                             color = "black",
-                                             margin = margin(t = 15, r = 0, b = 0, l = 0)),
-    legend.position = "none",
-    axis.title = element_text(size = 20),  # Larger axis labels
-    axis.text = element_text(size = 18),  # Larger axis numbers
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank(),
-    panel.grid.major = element_line(color = "#D3D3D3"),  # Light grid lines for readability
-    panel.grid.minor = element_blank()  # Remove minor grid lines
-  )
-
-yearly_plot_prez
-
-ggsave(here("images", "asthma_hospitalization_trends_viz.png"), yearly_plot_prez, width = 10, height = 6, units = "in")
 # --------------------------------------------------------------------------------
 # Hospitalizations by County
 # --------------------------------------------------------------------------------
@@ -275,7 +238,7 @@ county_colors<- c("Fresno" = "#E69F00",
                   "San Bernardino" = "#D55E00", 
                   "Other" = "grey")
 
-# Plot: Hospitalization rate per 1,000 people by year and county
+
 
 # Plot: Hospitalization rate per 1,000 people by year and county
 year_county_plot_prez <- ggplot(asthma_year_county_enviroscreen, aes(x = year, y = hospitalization_rate_per_1000, group = county, color = highlight)) +

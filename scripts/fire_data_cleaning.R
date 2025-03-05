@@ -80,3 +80,22 @@ fire_acres_county_plot <- ggplot(fire_acres_county, aes(x = reorder(county, tota
   theme_minimal()
 
 fire_acres_county_plot + fire_freq_county_plot  
+
+
+
+# aggrege fires by year aand make a ggplot line graph of fire frequency by year 
+
+fire_freq_county_year <- fire_data %>% 
+  filter(county != "REMOVE") %>% 
+  group_by(year) %>% 
+  summarize(frequency=n()) %>% 
+  ungroup() %>% 
+  filter(year >= 2013 & year <= 2020)
+
+fire_freq_plot <- ggplot(fire_freq_county_year, aes(x = year, y=frequency)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Year", y = "Fire Frequency", title = "Fire Frequency by Year") +
+  theme_minimal()
+
+fire_freq_plot

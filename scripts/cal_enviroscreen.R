@@ -70,7 +70,7 @@ clean_sf <- enviroscreen_sf %>%
          asthma_p = ifelse(asthma_p == -999, NA, asthma_p)) 
 
 # make a quick map
-ggplot(clean_sf) +
+map <- ggplot(clean_sf) +
   # Add base map layer
   geom_sf(aes(fill = asthma_p), 
           color = "white",          # White borders between tracts
@@ -82,15 +82,9 @@ ggplot(clean_sf) +
     option = "magma",             # Different viridis palette
     name = "Asthma percentile",  # Better legend title
     labels = scales::label_percent(scale = 1) # Format as percentages
-  ) +
-  
-  # Enhanced theme
-  theme_void() +
-  
-  # Better titles
-  labs(
-    title = "Asthma Risk Percentiles (CA)"
-)
+  )
+
+map
 
 # reminder: A percentile of 90 means that census tract has more asthma-related... 
 # ...ER visits than 90% of all census tracts in California
